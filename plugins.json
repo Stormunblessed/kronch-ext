@@ -1,0 +1,102 @@
+[
+    {
+        "iconUrl": "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/kronch.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Stormunblessed/kronch-ext",
+        "fileSize": 74826,
+        "status": 1,
+        "language": "en",
+        "authors": [
+            "Stormunblessed"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 32,
+        "internalName": "KronchENProvider",
+        "description": "With this extension you will be able to watch english hardsubbed/dubbed anime available in the US catalog of that site.",
+        "url": "https://raw.githubusercontent.com/Stormunblessed/kronch-ext/builds/KronchENProvider.cs3",
+        "name": "KronchENProvider"
+    },
+    {
+        "iconUrl": "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/kronch.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Stormunblessed/kronch-ext",
+        "fileSize": 76432,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "Stormunblessed"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 23,
+        "internalName": "KronchESProvider",
+        "description": "Con esta extensi\u00f3n podr\u00e1s ver anime subtitulado/doblado disponible en el cat\u00e1logo de Estados Unidos de ese sitio.",
+        "url": "https://raw.githubusercontent.com/Stormunblessed/kronch-ext/builds/KronchESProvider.cs3",
+        "name": "KronchESProvider"
+    },
+    {
+        "iconUrl": "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/kronch.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Stormunblessed/kronch-ext",
+        "fileSize": 68595,
+        "status": 1,
+        "language": "de",
+        "authors": [
+            "Stormunblessed"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 4,
+        "internalName": "KronchGEODEProvider",
+        "description": "Diese Erweiterung ist regional gesperrt, sie hilft Ihnen dabei, deutsche Hardsubbed/Synchron-Anime in Ihrer Region zu sehen.",
+        "url": "https://raw.githubusercontent.com/Stormunblessed/kronch-ext/builds/KronchGEODEProvider.cs3",
+        "name": "KronchGEODEProvider"
+    },
+    {
+        "iconUrl": "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/kronch.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Stormunblessed/kronch-ext",
+        "fileSize": 68508,
+        "status": 1,
+        "language": "en",
+        "authors": [
+            "Stormunblessed"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 10,
+        "internalName": "KronchGEOENProvider",
+        "description": "This extensions is region locked, it will help you watch english hardsubbed/dubbed anime in your region",
+        "url": "https://raw.githubusercontent.com/Stormunblessed/kronch-ext/builds/KronchGEOENProvider.cs3",
+        "name": "KronchGEOENProvider"
+    },
+    {
+        "iconUrl": "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/kronch.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Stormunblessed/kronch-ext",
+        "fileSize": 68859,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "Stormunblessed"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 11,
+        "internalName": "KronchGEOESProvider",
+        "description": "Esta extensi\u00f3n esta bloqueda por regi\u00f3n, solo podr\u00e1s ver anime doblado/subtitulado en espa\u00f1ol disponible en tu regi\u00f3n",
+        "url": "https://raw.githubusercontent.com/Stormunblessed/kronch-ext/builds/KronchGEOESProvider.cs3",
+        "name": "KronchGEOESProvider"
+    }
+]

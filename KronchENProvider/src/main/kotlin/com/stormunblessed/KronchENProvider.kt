@@ -556,7 +556,7 @@ class KronchENProvider: MainAPI() {
         val sstitle = this.seasonTitle ?: ""
         // To fix missing seasons
         val newSeason =
-            if (sstitle.contains(Regex("(?i)(Alicization War of Underworld|Battle of Kimluck|Entertainment District Arc)")))
+            if (sstitle.contains(Regex("(?i)(Alicization War of Underworld|Battle of Kimluck|Entertainment District Arc|Swordsmith Village)")))
                 season?.plus(1)
             else if (epnum == null) 0
             else season

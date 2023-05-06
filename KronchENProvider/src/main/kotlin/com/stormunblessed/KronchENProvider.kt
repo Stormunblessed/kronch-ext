@@ -54,9 +54,10 @@ class KronchENProvider: MainAPI() {
     )
 
     private suspend fun proxyToken(): Map<String, String> {
+        // thanks to @Samfun75
         val refreshtoken =
             app.get(
-                "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/refreshtoken.json"
+                "https://raw.githubusercontent.com/Samfun75/File-host/main/aniyomi/refreshToken.txt"
             ).parsed<TokensJson>()
         // Thanks to
         // https://github.com/jmir1/aniyomi-extensions/blob/master/src/all/kamyroll/src/eu/kanade/tachiyomi/animeextension/all/kamyroll/AccessTokenInterceptor.kt
@@ -83,11 +84,11 @@ class KronchENProvider: MainAPI() {
                     mapOf(
                         "User-Agent" to "Crunchyroll/3.26.1 Android/11 okhttp/4.9.2",
                         "Content-Type" to "application/x-www-form-urlencoded",
-                        "Authorization" to "Basic ${refreshtoken.Btoken}"
+                        "Authorization" to "Basic a3ZvcGlzdXZ6Yy0teG96Y21kMXk6R21JSTExenVPVnRnTjdlSWZrSlpibzVuLTRHTlZ0cU8="
                     ),
                     data =
                     mapOf(
-                        "refresh_token" to refreshtoken.Rtoken,
+                        "refresh_token" to refreshtoken,
                         "grant_type" to "refresh_token",
                         "scope" to "offline_access",
                     )

@@ -410,23 +410,41 @@ class KronchESGEOProvider: MainAPI() {
     private fun BetaKronchData.togetNormalEps(isSubbed: Boolean?):Episode{
         val eptitle = this.title
         val epID= this.streamsLink?.substringAfter("/videos/")?.substringBefore("/streams") ?: this.id
-        val epthumb = this.images?.thumbnail?.map { it[3].source }?.first() ?: ""
+        val epthumb = this.images?.thumbnail?.map { it[2].source }
+
+        var newEpthumb = "imagen"
+
+        if (epthumb != null) {
+            if (epthumb.isEmpty()) {
+                newEpthumb = ""
+            }
+        }
+        if (epthumb != null) {
+            if (epthumb.isNotEmpty())
+                newEpthumb = epthumb.first() ?: ""
+        }
+
         val epplot = this.description
         val season = this.seasonNumber
         val epnum = this.episodeNumber
         val dataep = "{\"id\":\"$epID\",\"issub\":$isSubbed}"
         val sstitle = this.seasonTitle ?: ""
+        // To fix missing seasons
         val newSeason =
-            if (sstitle.contains(Regex("(?i)(Alicization War of Underworld|Battle of Kimluck|Arco del Barrio del Placer)")))
+            if (sstitle.contains(Regex("(?i)(Alicization War of Underworld|Battle of Kimluck|Arco del Barrio del Placer|Arco de la Aldea de los Herreros)")))
                 season?.plus(1)
             else if (epnum == null) 0
             else season
-        return newEpisode(dataep){
+
+        val date = this.episodeAirDate
+
+        return newEpisode(dataep) {
             this.name = eptitle
-            this.episode = epnum
-            this.season = newSeason
             this.description = epplot
-            this.posterUrl = epthumb
+            this.posterUrl = newEpthumb
+            this.season = newSeason
+            this.episode = epnum
+            addDate(date, format = "yyyy-MM-dd'T'HH:mm:ss")
         }
     }
 

@@ -305,6 +305,7 @@ class KronchESProvider: MainAPI() {
             aaaa.items
                 .filter {
                     it.episodeMetadata?.audioLocale == "ja-JP" ||
+                            it.episodeMetadata?.audioLocale == "zh-CN" ||
                             it.episodeMetadata?.audioLocale?.isEmpty() == true
                 }
                 .map {
@@ -544,23 +545,41 @@ class KronchESProvider: MainAPI() {
     private fun BetaKronchData.togetNormalEps(isSubbed: Boolean?):Episode{
         val eptitle = this.title
         val epID= this.streamsLink?.substringAfter("/videos/")?.substringBefore("/streams") ?: this.id
-        val epthumb = this.images?.thumbnail?.map { it[3].source }?.first() ?: ""
+        val epthumb = this.images?.thumbnail?.map { it[2].source }
+
+        var newEpthumb = "imagen"
+
+        if (epthumb != null) {
+            if (epthumb.isEmpty()) {
+                newEpthumb = ""
+            }
+        }
+        if (epthumb != null) {
+            if (epthumb.isNotEmpty())
+                newEpthumb = epthumb.first() ?: ""
+        }
+
         val epplot = this.description
         val season = this.seasonNumber
         val epnum = this.episodeNumber
         val dataep = "{\"id\":\"$epID\",\"issub\":$isSubbed}"
         val sstitle = this.seasonTitle ?: ""
+        // To fix missing seasons
         val newSeason =
             if (sstitle.contains(Regex("(?i)(Alicization War of Underworld|Battle of Kimluck|Arco del Barrio del Placer|Arco de la Aldea de los Herreros)")))
                 season?.plus(1)
             else if (epnum == null) 0
             else season
-        return newEpisode(dataep){
+
+        val date = this.episodeAirDate
+
+        return newEpisode(dataep) {
             this.name = eptitle
-            this.episode = epnum
-            this.season = newSeason
             this.description = epplot
-            this.posterUrl = epthumb
+            this.posterUrl = newEpthumb
+            this.season = newSeason
+            this.episode = epnum
+            addDate(date, format = "yyyy-MM-dd'T'HH:mm:ss")
         }
     }
 
@@ -592,16 +611,14 @@ class KronchESProvider: MainAPI() {
                 )
                     .parsedSafe<BetaKronch>()
                     ?: throw ErrorLoadingException("Couldn't get episodes, try again")
-            if (nn.data.isEmpty())
-                throw ErrorLoadingException("No se podido obtener los episodios, intenta otra vez")
+            if (nn.data.isEmpty()) throw ErrorLoadingException("Failed to get episodes, try again")
             val inn =
                 nn.data.filter {
                     !it.title!!.contains(
-                        Regex("(?i)(Piece: East Blue|Piece: Alabasta|Piece: Sky Island)")
+                        Regex("Piece: East Blue|Piece: Alabasta|Piece: Sky Island")
                     )
                     // || it.audioLocale == "ja-JP" || it.audioLocale == "zh-CN" || it.audioLocale
-                    // ==
-                    // "en-US" || it.audioLocale?.isEmpty() == true
+                    // == "es-ES" || it.audioLocale?.isEmpty() == true
                 }
             val innversions =
                 inn.filter {
@@ -612,6 +629,7 @@ class KronchESProvider: MainAPI() {
                             it.audioLocale == "es-419" ||
                             it.audioLocale?.isEmpty() == true
                 }
+
             inn.apmap { main ->
                 val mainID = main.id
                 val res =
@@ -622,9 +640,7 @@ class KronchESProvider: MainAPI() {
                         .parsedSafe<BetaKronch>()
                         ?: throw ErrorLoadingException("Couldn't get episodes, try again")
                 if (res.data.isEmpty())
-                    throw ErrorLoadingException(
-                        "No se ha podido cargar la temporada ${main.title} correctamente, intenta de nuevo"
-                    )
+                    throw ErrorLoadingException("Failed to load season ${main.title}, try again")
                 val restwo =
                     res.data.filter {
                         it.audioLocale == "ja-JP" ||
@@ -634,11 +650,7 @@ class KronchESProvider: MainAPI() {
                 restwo.map { second ->
                     val clip = second.isClip == false
                     if (clip) {
-                        subEps.add(
-                            second.togetNormalEps(
-                                true,
-                            )
-                        )
+                        subEps.add(second.togetNormalEps(true))
                     }
                 }
             }
@@ -658,26 +670,27 @@ class KronchESProvider: MainAPI() {
                             .parsedSafe<BetaKronch>()
                             ?: throw ErrorLoadingException("Couldn't get episodes, try again")
                     if (resv.data.isEmpty())
-                        throw ErrorLoadingException(
-                            "No se ha podido cargar la temporada ${ve.title} correctamente, intenta de nuevo"
-                        )
+                        throw ErrorLoadingException("Failed to load season ${ve.title}, try again")
                     resv.data.map { pss ->
                         val clip = pss.isClip == false
                         val audioss = pss.audioLocale
-                        if ((audioss == "es-ES" || audioss == "es-419") && clip) {
-                            val dubss = pss.togetNormalEps(false)
-                            dubEps.add(dubss)
-                        }
-                        if (
-                            (audioss!!.contains(Regex("ja-JP|zh-CN")) || audioss.isEmpty()) && clip
-                        ) {
-                            val subbs = pss.togetNormalEps(true)
-                            subEps.add(subbs)
+                        if (clip) {
+                            if (audioss == "es-ES" || audioss == "es-419") {
+                                val dubss = pss.togetNormalEps(false)
+                                dubEps.add(dubss)
+                            }
+                            if (
+                                audioss.isNullOrEmpty() || audioss == "ja-JP" || audioss == "zh-CN"
+                            ) {
+                                val subbs = pss.togetNormalEps(true)
+                                subEps.add(subbs)
+                            }
                         }
                     }
                 }
             }
         }
+
         val sases =
             subEps.distinctBy { it.data }.sortedWith(compareBy({ it.season }, { it.episode }))
 
@@ -788,6 +801,7 @@ class KronchESProvider: MainAPI() {
         val mediaId = parsedata.id
         val issub = parsedata.issub == true
         val response = app.get("$krunchyapi/content/v2/cms/videos/$mediaId/streams", latestKrunchyHeader).parsed<BetaKronchGEOStreams>()
+
         response.data?.map {testt ->
             val adphls = testt.multiadaptiveHLS ?: testt.adaptiveHLS
             val vvhls = testt.vrvHLS

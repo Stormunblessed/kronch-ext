@@ -304,6 +304,7 @@ class KronchENProvider: MainAPI() {
             aaaa.items
                 .filter {
                     it.episodeMetadata?.audioLocale == "ja-JP" ||
+                            it.episodeMetadata?.audioLocale == "zh-CN" ||
                             it.episodeMetadata?.audioLocale?.isEmpty() == true
                 }
                 .map {

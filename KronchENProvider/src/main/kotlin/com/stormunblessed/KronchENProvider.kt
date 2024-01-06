@@ -136,6 +136,26 @@ class KronchENProvider: MainAPI() {
          return latestKrunchyHeader
      } */
 
+
+
+    data class CmsDataMain (
+        @JsonProperty("cms"                      ) val cms                   : CmsData     = CmsData(),
+    )
+
+    data class CmsData (
+
+        @JsonProperty("bucket"      ) var bucket    : String? = null,
+        @JsonProperty("policy"      ) var policy    : String? = null,
+        @JsonProperty("signature"   ) var signature : String? = null,
+        @JsonProperty("key_pair_id" ) var keyPairId : String? = null,
+        @JsonProperty("expires"     ) var expires   : String? = null
+
+    )
+    private suspend fun cmsInfo(): CmsData{
+        proxyToken()
+        return app.get("$krunchyapi/index/v2", headers = latestKrunchyHeader).parsed<CmsDataMain>().cms
+    }
+
     data class PosterTall (
         @JsonProperty("height" ) var height : Int?    = null,
         @JsonProperty("source" ) var source : String? = null,
@@ -723,30 +743,24 @@ class KronchENProvider: MainAPI() {
     data class Subtitle (
         val locale: String? = null,
         val url: String? = null,
-        val format: String? = null,
     )
 
     data class Testt (
-        @JsonProperty("drm_adaptive_hls")val adaptiveHLS: Map<String, BetaKronchS>? = null,
-        @JsonProperty("vo_drm_adaptive_hls")val vrvHLS: Map<String, BetaKronchS>? = null,
-        @JsonProperty("drm_multitrack_adaptive_hls_v2") val multiadaptiveHLS: Map<String,BetaKronchS>? = null,
+        @JsonProperty("adaptive_hls")val adaptiveHLS: Map<String, BetaKronchS>? = null,
+        @JsonProperty("vo_adaptive_hls")val vrvHLS: Map<String, BetaKronchS>? = null,
+        @JsonProperty("multitrack_adaptive_hls_v2") val multiadaptiveHLS: Map<String,BetaKronchS>? = null,
     )
 
 
-
     data class BetaKronchS (
-        @JsonProperty("hardsub_locale" ) var hardsubLocale : String? = null,
+        @JsonProperty("hardsub_locale" ) var harsubLocale : String? = null,
         @JsonProperty("url"            ) var url           : String? = null,
     )
 
 
-    data class BetaKronchGEOStreams (
-        @JsonProperty("total" ) var total : Int?            = null,
-        @JsonProperty("data"  ) var data  : ArrayList<Testt>? = arrayListOf(),
-        @JsonProperty("meta"  ) var meta  : Meta?           = Meta()
-    )
-    data class Meta (
-        @JsonProperty("subtitles"       ) var subtitles      : Map<String, Subtitle>?          = null,
+    data class KronchStreams (
+        @JsonProperty("subtitles"        ) var subtitle      : Map<String, Subtitle>?          = null,
+        @JsonProperty("streams"          ) var streams        : Testt?            = Testt(),
     )
 
 
@@ -784,16 +798,18 @@ class KronchENProvider: MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-         proxyToken()
+        proxyToken()
         val newdata = data.replace("https://www.crunchyroll.com/","")
         val parsedata = parseJson<EpsInfo>(newdata)
         val mediaId = parsedata.id
         val issub = parsedata.issub == true
-        val response = app.get("$krunchyapi/content/v2/cms/videos/$mediaId/streams", latestKrunchyHeader).parsed<BetaKronchGEOStreams>()
-
-        response.data?.map {testt ->
-            val adphls = testt.multiadaptiveHLS ?: testt.adaptiveHLS
-            val vvhls = testt.vrvHLS
+        val cms = cmsInfo()
+        val url = "$krunchyapi/cms/v2/US/M3/crunchyroll/videos/$mediaId/streams?Policy=${cms.policy}&Signature=${cms.signature}&Key-Pair-Id=${cms.keyPairId}"
+        val response = app.get(url).parsed<KronchStreams>()
+        val links = arrayListOf(response.streams)
+        links.map {testt ->
+            val adphls = testt?.multiadaptiveHLS ?: testt?.adaptiveHLS
+            val vvhls = testt?.vrvHLS
             val bbb = listOfNotNull(vvhls, adphls)
             bbb.apmap { aa ->
                 aa.entries.filter {
@@ -806,8 +822,8 @@ class KronchENProvider: MainAPI() {
                     if (testtting.contains(Regex("(?i)accessdenied"))) handler.postFunction {
                         context.let { tt -> Toast.makeText(tt, "Reload links.", Toast.LENGTH_LONG).show() }
                     } else {
-                        val raw = str.hardsubLocale?.isEmpty()
-                        val hardsubinfo = str.hardsubLocale?.contains("en-US")
+                        val raw = str.harsubLocale?.isEmpty()
+                        val hardsubinfo = str.harsubLocale?.contains("en-US")
                         val vvv = if (str.url!!.contains("vrv.co")) "_VRV" else ""
                         val name = if (raw == false && issub) "Kronch$vvv Hardsub English (US)" else if (raw == true && issub) "Kronch$vvv RAW" else "Kronch$vvv English"
                         if (hardsubinfo == true && issub) {
@@ -820,15 +836,18 @@ class KronchENProvider: MainAPI() {
                 }
             }
         }
-        response.meta?.subtitles?.map {
+
+        val subTest =response.subtitle
+        subTest?.map {
             it.value
         }?.map {
             val lang = fixLocale(it.locale)
-            val url = it.url
+            val subUrl = it.url
             subtitleCallback.invoke(
-                SubtitleFile(lang,url!!)
+                SubtitleFile(lang,subUrl!!)
             )
         }
+
         return true
     }
 }

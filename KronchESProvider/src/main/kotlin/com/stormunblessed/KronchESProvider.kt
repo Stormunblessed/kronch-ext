@@ -137,6 +137,25 @@ class KronchESProvider: MainAPI() {
          return latestKrunchyHeader
      } */
 
+
+    data class CmsDataMain (
+        @JsonProperty("cms"                      ) val cms                   : CmsData     = CmsData(),
+    )
+
+    data class CmsData (
+
+        @JsonProperty("bucket"      ) var bucket    : String? = null,
+        @JsonProperty("policy"      ) var policy    : String? = null,
+        @JsonProperty("signature"   ) var signature : String? = null,
+        @JsonProperty("key_pair_id" ) var keyPairId : String? = null,
+        @JsonProperty("expires"     ) var expires   : String? = null
+
+    )
+    private suspend fun cmsInfo(): CmsData{
+        proxyToken()
+        return app.get("$krunchyapi/index/v2", headers = latestKrunchyHeader).parsed<CmsDataMain>().cms
+    }
+
     data class PosterTall (
         @JsonProperty("height" ) var height : Int?    = null,
         @JsonProperty("source" ) var source : String? = null,
@@ -751,6 +770,11 @@ class KronchESProvider: MainAPI() {
     )
 
 
+    data class KronchStreams (
+        @JsonProperty("subtitles"        ) var subtitle      : Map<String, Subtitle>?          = null,
+        @JsonProperty("streams"          ) var streams        : Testt?            = Testt(),
+    )
+
     data class BetaKronchGEOStreams (
         @JsonProperty("total" ) var total : Int?            = null,
         @JsonProperty("data"  ) var data  : ArrayList<Testt>? = arrayListOf(),
@@ -800,11 +824,13 @@ class KronchESProvider: MainAPI() {
         val parsedata = parseJson<EpsInfo>(newdata)
         val mediaId = parsedata.id
         val issub = parsedata.issub == true
-        val response = app.get("$krunchyapi/content/v2/cms/videos/$mediaId/streams", latestKrunchyHeader).parsed<BetaKronchGEOStreams>()
-
-        response.data?.map {testt ->
-            val adphls = testt.multiadaptiveHLS ?: testt.adaptiveHLS
-            val vvhls = testt.vrvHLS
+        val cms = cmsInfo()
+        val url = "$krunchyapi/cms/v2/US/M3/crunchyroll/videos/$mediaId/streams?Policy=${cms.policy}&Signature=${cms.signature}&Key-Pair-Id=${cms.keyPairId}"
+        val response = app.get(url).parsed<KronchStreams>()
+        val links = arrayListOf(response.streams)
+        links.map {testt ->
+            val adphls = testt?.multiadaptiveHLS ?: testt?.adaptiveHLS
+            val vvhls = testt?.vrvHLS
             val bbb = listOfNotNull(vvhls, adphls)
             bbb.apmap { aa ->
                 aa.entries.filter {
@@ -837,13 +863,15 @@ class KronchESProvider: MainAPI() {
                 }
             }
         }
-        response.meta?.subtitles?.map {
+
+        val subTest =response.subtitle
+        subTest?.map {
             it.value
         }?.map {
             val lang = fixLocale(it.locale)
-            val url = it.url
+            val subUrl = it.url
             subtitleCallback.invoke(
-                SubtitleFile(lang,url!!)
+                SubtitleFile(lang,subUrl!!)
             )
         }
         return true

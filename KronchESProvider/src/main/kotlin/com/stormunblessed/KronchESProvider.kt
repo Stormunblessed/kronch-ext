@@ -757,9 +757,9 @@ class KronchESProvider: MainAPI() {
     )
 
     data class Testt (
-        @JsonProperty("drm_adaptive_hls")val adaptiveHLS: Map<String, BetaKronchS>? = null,
-        @JsonProperty("vo_drm_adaptive_hls")val vrvHLS: Map<String, BetaKronchS>? = null,
-        @JsonProperty("drm_multitrack_adaptive_hls_v2") val multiadaptiveHLS: Map<String,BetaKronchS>? = null,
+            @JsonProperty("adaptive_hls")val adaptiveHLS: Map<String, BetaKronchS>? = null,
+            @JsonProperty("vo_adaptive_hls")val vrvHLS: Map<String, BetaKronchS>? = null,
+            @JsonProperty("multitrack_adaptive_hls_v2") val multiadaptiveHLS: Map<String,BetaKronchS>? = null,
     )
 
 
